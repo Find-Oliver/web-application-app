@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+body {
+    background: #020617;
+    color: #e2e8f0;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    margin: 0;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+nav a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+nav a:hover {
+    color: #f8fafc;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+}
+
+.role-table-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 32px;
+    box-shadow: 0 32px 80px rgba(15, 23, 42, 0.35);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 9999px;
+    padding: 0.55rem 0.95rem;
+    font-size: 0.83rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.status-pill.active {
+    background: rgba(16, 185, 129, 0.18);
+    color: #a7f3d0;
+}
+
+.status-pill.inactive {
+    background: rgba(148, 163, 184, 0.15);
+    color: #cbd5e1;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+.action-btn.edit {
+    background: #f59e0b;
+    color: #020617;
+}
+
+.action-btn.delete {
+    background: #ef4444;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

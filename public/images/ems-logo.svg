@@ -1,0 +1,42 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hexFill" x1="166" y1="116" x2="436" y2="324" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB11A"/>
+      <stop offset="1" stop-color="#F57C00"/>
+    </linearGradient>
+    <linearGradient id="hexStroke" x1="170" y1="120" x2="430" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD56A"/>
+      <stop offset="1" stop-color="#FF8C1A"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(65,10)">
+    <path d="M125 20L304 20L408 102L408 255L304 337L125 337L21 255L21 102L125 20Z" fill="url(#hexFill)" stroke="url(#hexStroke)" stroke-width="12"/>
+
+    <g opacity="0.95">
+      <path d="M112 155C112 128.49 133.49 107 160 107H188C214.51 107 236 128.49 236 155V200C236 226.51 214.51 248 188 248H160C133.49 248 112 226.51 112 200V155Z" fill="#F2F4F7"/>
+      <rect x="95" y="250" width="144" height="28" rx="14" fill="#F2F4F7"/>
+      <path d="M238 172C238 146.595 259.595 126 285 126H337C362.405 126 384 146.595 384 172V200C384 225.405 362.405 247 337 247H285C259.595 247 238 225.405 238 200V172Z" fill="#F2F4F7"/>
+      <rect x="246" y="251" width="170" height="28" rx="14" fill="#F2F4F7"/>
+      <circle cx="192" cy="80" r="31" fill="#F2F4F7"/>
+      <circle cx="302" cy="79" r="30" fill="#F2F4F7"/>
+      <circle cx="247" cy="80" r="26" fill="#F2F4F7"/>
+      <path d="M235 232H273L275 286H233L235 232Z" fill="#F2F4F7"/>
+      <path d="M172 231H205L206 286H171L172 231Z" fill="#F2F4F7"/>
+      <path d="M120 155C120 140.641 131.641 129 146 129H195C209.359 129 221 140.641 221 155V177C221 191.359 209.359 203 195 203H146C131.641 203 120 191.359 120 177V155Z" fill="#F9B72B"/>
+      <path d="M256 164C256 149.641 267.641 138 282 138H333C347.359 138 359 149.641 359 164V182C359 196.359 347.359 208 333 208H282C267.641 208 256 196.359 256 182V164Z" fill="#F9B72B"/>
+    </g>
+
+    <g>
+      <path d="M180 260H312L338 301H154L180 260Z" fill="#F5F7FA"/>
+      <path d="M241 271H322C326.418 271 330 274.582 330 279V300H236L241 271Z" fill="#E5E9F0"/>
+      <rect x="170" y="261" width="16" height="44" rx="8" fill="#F2F4F7"/>
+      <rect x="306" y="261" width="16" height="44" rx="8" fill="#F2F4F7"/>
+      <rect x="168" y="286" width="161" height="12" rx="6" fill="#E2E8F0"/>
+    </g>
+  </g>
+
+  <g transform="translate(120,355)">
+    <text x="0" y="0" font-size="86" font-weight="900" letter-spacing="1" fill="#F4F6FA" font-family="Segoe UI, Arial, sans-serif">EMS</text>
+  </g>
+</svg>
