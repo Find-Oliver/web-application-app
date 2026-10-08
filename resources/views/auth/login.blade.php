@@ -108,14 +108,14 @@
         Don't have an account? <a href="{{ route('register') }}">Create one</a>
     </div>
 
-    <details class="demo-access">
+    {{-- <details class="demo-access">
         <summary>Demo access</summary>
         <p>
             Admin: admin@example.com<br>
             Employee: employee@example.com<br>
             Password: ChangeThisPassword123!
         </p>
-    </details>
+    </details> --}}
 
     <footer class="auth-footer">Employee Management System &middot; &copy; {{ date('Y') }}</footer>
 
