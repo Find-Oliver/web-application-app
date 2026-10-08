@@ -7,7 +7,7 @@
     <div class="auth-header">
         <img src="{{ asset('images/emsLogo.png') }}" alt="EMS Logo" class="auth-logo">
         <h1 class="auth-title">Welcome Back</h1>
-        <p class="auth-subtitle">Sign in to your EMS account</p>
+        <p class="auth-subtitle">Secure access to your employee management portal</p>
     </div>
 
     @if ($errors->any())
