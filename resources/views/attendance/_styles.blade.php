@@ -24,6 +24,12 @@
         overflow-x: auto;
     }
 
+    .attendance-pagination svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
     .attendance-table {
         width: 100%;
         min-width: 760px;

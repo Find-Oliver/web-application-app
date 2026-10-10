@@ -131,6 +131,15 @@ describe('Responsive design', function () {
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('mobile-nav-toggle')
-            ->assertSee('sidebar-backdrop');
+            ->assertSee('sidebar-backdrop')
+            ->assertSee('aria-controls="app-sidebar"', false)
+            ->assertSee('aria-expanded="true"', false)
+            ->assertSee('aria-label="Collapse sidebar"', false)
+            ->assertSee('class="nav-link active" aria-label="Dashboard"', false)
+            ->assertSee('aria-label="Employees"', false)
+            ->assertSee('aria-label="Attendance"', false)
+            ->assertSee('aria-label="Departments"', false)
+            ->assertSee('aria-label="Positions"', false)
+            ->assertSee('aria-label="Roles"', false);
     });
 });

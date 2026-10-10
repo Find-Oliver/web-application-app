@@ -175,6 +175,12 @@ describe('DashboardController', function () {
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee('My Pending Requests')
+            ->assertSee('class="nav-link active" aria-label="Dashboard"', false)
+            ->assertDontSee('aria-label="Employees"', false)
+            ->assertDontSee('aria-label="Attendance"', false)
+            ->assertDontSee('aria-label="Departments"', false)
+            ->assertDontSee('aria-label="Positions"', false)
+            ->assertDontSee('aria-label="Roles"', false)
             ->assertSee('1');
     });
 });

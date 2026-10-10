@@ -54,5 +54,5 @@
         </table>
     </div>
 
-    <div style="margin-top: 18px;">{{ $attendanceRecords->links() }}</div>
+    <div class="attendance-pagination" style="margin-top: 18px;">{{ $attendanceRecords->links() }}</div>
 @endsection

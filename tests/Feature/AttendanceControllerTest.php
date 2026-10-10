@@ -139,4 +139,42 @@ describe('AttendanceController', function () {
             ->get(route('attendance.index'))
             ->assertForbidden();
     });
+
+    it('keeps attendance pagination arrows at their intended size', function () {
+        $adminRole = Role::create(['role_name' => 'Admin', 'is_active' => true]);
+        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        $employee = Employee::create([
+            'employee_code' => 'EMP-ATT-PAGE',
+            'first_name' => 'Avery',
+            'last_name' => 'Jones',
+            'email' => 'avery-pagination@example.test',
+            'phone' => '555-0110',
+            'address' => '10 Main Street',
+            'date_of_birth' => '1990-01-01',
+            'gender' => 'Other',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2020-01-01',
+        ]);
+
+        foreach (range(1, 21) as $day) {
+            Attendance::create([
+                'employee_id' => $employee->id,
+                'attendance_date' => today()->subDays($day)->toDateString(),
+                'time_in' => '08:30',
+                'time_out' => '17:00',
+                'status' => 'Present',
+            ]);
+        }
+
+        $this->actingAs($admin)
+            ->get(route('attendance.index'))
+            ->assertOk()
+            ->assertSee('class="attendance-pagination"', false)
+            ->assertSee('<svg class="w-5 h-5"', false)
+            ->assertSee('.attendance-pagination svg', false)
+            ->assertSee('width: 20px;', false)
+            ->assertSee('height: 20px;', false);
+    });
 });

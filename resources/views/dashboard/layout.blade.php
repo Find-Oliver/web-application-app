@@ -40,7 +40,10 @@
 
         html, body {
             margin: 0;
+            width: 100%;
+            height: 100%;
             min-height: 100%;
+            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg);
             color: var(--text);
@@ -48,11 +51,18 @@
 
         body {
             display: flex;
+            height: 100vh;
+            min-height: 0;
         }
 
         .sidebar {
-            width: 264px;
-            min-height: 100vh;
+            width: clamp(220px, 22vw, 264px);
+            flex: 0 0 clamp(220px, 22vw, 264px);
+            height: 100vh;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             background: linear-gradient(180deg, #0f172a 0%, #111c2f 100%);
             color: var(--sidebar-text);
             padding: 20px 14px 24px;
@@ -60,10 +70,11 @@
             top: 0;
             border-right: 1px solid rgba(148, 163, 184, 0.15);
             box-shadow: inset -1px 0 0 rgba(255,255,255,0.04);
+            transition: width 0.2s ease, flex-basis 0.2s ease, transform 0.2s ease;
         }
 
         .mobile-nav-toggle {
-            display: none;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 8px 10px;
@@ -74,6 +85,24 @@
             font: inherit;
             font-weight: 600;
             cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .mobile-nav-toggle:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .mobile-nav-toggle:focus-visible {
+            outline: 3px solid rgba(15, 118, 110, 0.35);
+            outline-offset: 2px;
+        }
+
+        .mobile-nav-toggle svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
         }
 
         .sidebar-backdrop {
@@ -128,6 +157,10 @@
             border-left: 3px solid transparent;
         }
 
+        .nav-link-short {
+            display: none;
+        }
+
         .nav-link:hover {
             background: rgba(148, 163, 184, 0.08);
             color: var(--sidebar-text-active);
@@ -144,6 +177,58 @@
         .main-panel {
             flex: 1;
             min-width: 0;
+            min-height: 0;
+            height: 100vh;
+            overflow-x: auto;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+        @media (min-width: 901px) {
+            .sidebar.is-collapsed {
+                width: 76px;
+                flex-basis: 76px;
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+
+            .sidebar.is-collapsed .brand {
+                padding: 10px 4px;
+            }
+
+            .sidebar.is-collapsed .brand img {
+                width: 44px;
+            }
+
+            .sidebar.is-collapsed .nav-label,
+            .sidebar.is-collapsed .nav-link-label {
+                display: none;
+            }
+
+            .sidebar.is-collapsed .nav-link {
+                justify-content: center;
+                min-height: 44px;
+                padding: 10px 8px;
+                border-left-width: 0;
+            }
+
+            .sidebar.is-collapsed .nav-link-short {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 30px;
+                height: 30px;
+                border-radius: 9px;
+                background: rgba(148, 163, 184, 0.1);
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+            }
+
+            .sidebar.is-collapsed .nav-link.active .nav-link-short {
+                background: var(--primary);
+                color: #fff;
+            }
         }
 
         .topbar {
@@ -558,12 +643,19 @@
                 display: block;
             }
 
+            .main-panel {
+                width: 100%;
+            }
+
             .sidebar {
                 position: fixed;
                 inset: 0 auto 0 0;
                 z-index: 40;
                 width: min(280px, calc(100vw - 48px));
-                min-height: 100vh;
+                height: 100vh;
+                height: 100dvh;
+                min-height: 0;
+                flex: none;
                 overflow-y: auto;
                 transform: translateX(-100%);
                 transition: transform 0.2s ease;
@@ -588,10 +680,6 @@
             .sidebar-backdrop.is-visible {
                 opacity: 1;
                 visibility: visible;
-            }
-
-            .mobile-nav-toggle {
-                display: inline-flex;
             }
 
             .topbar {
@@ -625,6 +713,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+            .mobile-nav-toggle,
             .sidebar,
             .sidebar-backdrop {
                 transition: none;
@@ -641,15 +730,27 @@
 
             <nav class="nav-group">
                 <span class="nav-label">Main</span>
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" aria-label="Dashboard" title="Dashboard">
+                    <span class="nav-link-label">Dashboard</span><span class="nav-link-short" aria-hidden="true">D</span>
+                </a>
 
                 @if (Auth::user()->isAdmin())
                     <span class="nav-label">Administration</span>
-                    <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}">Employees</a>
-                    <a href="{{ route('attendance.index') }}" class="nav-link {{ request()->routeIs('attendance.*') ? 'active' : '' }}">Attendance</a>
-                    <a href="{{ route('departments.index') }}" class="nav-link {{ request()->routeIs('departments.*') ? 'active' : '' }}">Departments</a>
-                    <a href="{{ route('positions.index') }}" class="nav-link {{ request()->routeIs('positions.*') ? 'active' : '' }}">Positions</a>
-                    <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}">Roles</a>
+                    <a href="{{ route('employees.index') }}" class="nav-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" aria-label="Employees" title="Employees">
+                        <span class="nav-link-label">Employees</span><span class="nav-link-short" aria-hidden="true">E</span>
+                    </a>
+                    <a href="{{ route('attendance.index') }}" class="nav-link {{ request()->routeIs('attendance.*') ? 'active' : '' }}" aria-label="Attendance" title="Attendance">
+                        <span class="nav-link-label">Attendance</span><span class="nav-link-short" aria-hidden="true">A</span>
+                    </a>
+                    <a href="{{ route('departments.index') }}" class="nav-link {{ request()->routeIs('departments.*') ? 'active' : '' }}" aria-label="Departments" title="Departments">
+                        <span class="nav-link-label">Departments</span><span class="nav-link-short" aria-hidden="true">D</span>
+                    </a>
+                    <a href="{{ route('positions.index') }}" class="nav-link {{ request()->routeIs('positions.*') ? 'active' : '' }}" aria-label="Positions" title="Positions">
+                        <span class="nav-link-label">Positions</span><span class="nav-link-short" aria-hidden="true">P</span>
+                    </a>
+                    <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*') ? 'active' : '' }}" aria-label="Roles" title="Roles">
+                        <span class="nav-link-label">Roles</span><span class="nav-link-short" aria-hidden="true">R</span>
+                    </a>
                 @endif
             </nav>
         </aside>
@@ -659,9 +760,11 @@
     <main class="main-panel">
         @auth
             <header class="topbar">
-                <button class="mobile-nav-toggle" type="button" aria-controls="app-sidebar" aria-expanded="false">
-                    <span aria-hidden="true">&#9776;</span>
-                    <span>Menu</span>
+                <button class="mobile-nav-toggle" type="button" aria-label="Collapse sidebar" aria-controls="app-sidebar" aria-expanded="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <span class="toggle-label">Collapse</span>
                 </button>
                 <div class="page-header-tag">Employee Management System</div>
                 <div class="topbar-user">
@@ -709,31 +812,61 @@
             (() => {
                 const sidebar = document.getElementById('app-sidebar');
                 const toggle = document.querySelector('.mobile-nav-toggle');
+                const toggleLabel = toggle?.querySelector('.toggle-label');
                 const backdrop = document.querySelector('.sidebar-backdrop');
 
                 if (!sidebar || !toggle || !backdrop) return;
 
-                const closeSidebar = (restoreFocus = false) => {
-                    sidebar.classList.remove('is-open');
-                    backdrop.classList.remove('is-visible');
-                    toggle.setAttribute('aria-expanded', 'false');
+                const isMobile = () => window.matchMedia('(max-width: 900px)').matches;
+                let isCollapsed = false;
+                let isDrawerOpen = false;
+
+                const updateSidebarState = () => {
+                    const mobile = isMobile();
+                    sidebar.classList.toggle('is-open', mobile && isDrawerOpen);
+                    sidebar.classList.toggle('is-collapsed', !mobile && isCollapsed);
+                    backdrop.classList.toggle('is-visible', mobile && isDrawerOpen);
+                    toggle.setAttribute('aria-expanded', String(mobile ? isDrawerOpen : !isCollapsed));
+                    toggle.setAttribute(
+                        'aria-label',
+                        mobile
+                            ? (isDrawerOpen ? 'Close navigation menu' : 'Open navigation menu')
+                            : (isCollapsed ? 'Expand sidebar' : 'Collapse sidebar')
+                    );
+                    if (toggleLabel) {
+                        toggleLabel.textContent = mobile
+                            ? (isDrawerOpen ? 'Close' : 'Menu')
+                            : (isCollapsed ? 'Expand' : 'Collapse');
+                    }
+                };
+
+                const closeDrawer = (restoreFocus = false) => {
+                    isDrawerOpen = false;
+                    updateSidebarState();
                     if (restoreFocus) toggle.focus();
                 };
 
                 toggle.addEventListener('click', () => {
-                    const isOpen = sidebar.classList.toggle('is-open');
-                    backdrop.classList.toggle('is-visible', isOpen);
-                    toggle.setAttribute('aria-expanded', String(isOpen));
-                    if (isOpen) sidebar.querySelector('a')?.focus();
+                    if (isMobile()) {
+                        isDrawerOpen = !isDrawerOpen;
+                        updateSidebarState();
+                        if (isDrawerOpen) sidebar.querySelector('a')?.focus();
+                        return;
+                    }
+
+                    isCollapsed = !isCollapsed;
+                    updateSidebarState();
                 });
 
-                backdrop.addEventListener('click', () => closeSidebar(true));
-                sidebar.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeSidebar()));
+                backdrop.addEventListener('click', () => closeDrawer(true));
+                sidebar.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+                    if (isMobile()) closeDrawer();
+                }));
                 document.addEventListener('keydown', (event) => {
-                    if (!sidebar.classList.contains('is-open')) return;
+                    if (!isMobile() || !isDrawerOpen) return;
 
                     if (event.key === 'Escape') {
-                        closeSidebar(true);
+                        closeDrawer(true);
                         return;
                     }
 
@@ -752,11 +885,13 @@
                     }
                 });
                 window.addEventListener('resize', () => {
-                    if (window.innerWidth > 900) closeSidebar();
+                    if (!isMobile() && isDrawerOpen) isDrawerOpen = false;
+                    updateSidebarState();
                 });
+
+                updateSidebarState();
             })();
         </script>
     @endauth
 </body>
 </html>
-
