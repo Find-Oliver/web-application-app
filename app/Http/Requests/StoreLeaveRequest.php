@@ -21,7 +21,6 @@ class StoreLeaveRequest extends FormRequest
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'reason' => ['required', 'string', 'max:2000'],
             'remarks' => ['nullable', 'string', 'max:2000'],
-            'status' => ['nullable', Rule::in(['Pending', 'Approved', 'Rejected', 'Cancelled'])],
         ];
     }
 }

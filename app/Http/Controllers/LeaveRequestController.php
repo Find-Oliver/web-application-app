@@ -13,13 +13,17 @@ use Illuminate\View\View;
 
 class LeaveRequestController extends Controller
 {
-    protected function currentEmployeeId(): ?int
+    private function currentEmployee(): ?Employee
     {
-        if (auth()->user()?->isAdmin()) {
+        $user = auth()->user();
+
+        if ($user?->isAdmin()) {
             return null;
         }
 
-        return Employee::where('email', auth()->user()->email)->value('id');
+        return $user
+            ? Employee::where('email', $user->email)->first()
+            : null;
     }
 
     public function index(): View
@@ -27,7 +31,7 @@ class LeaveRequestController extends Controller
         $query = LeaveRequest::with(['employee', 'leaveType', 'approver'])->latest();
 
         if (! auth()->user()->isAdmin()) {
-            $query->where('employee_id', $this->currentEmployeeId() ?? -1);
+            $query->where('employee_id', $this->currentEmployee()?->id ?? 0);
         }
 
         $leaveRequests = $query->paginate(20);
@@ -41,7 +45,7 @@ class LeaveRequestController extends Controller
 
         $employees = auth()->user()->isAdmin()
             ? Employee::orderBy('last_name')->orderBy('first_name')->get()
-            : Employee::where('email', auth()->user()->email)->get();
+            : Employee::whereKey($this->currentEmployee()?->id)->get();
 
         return view('leave_requests.create', [
             'leaveTypes' => LeaveType::where('is_active', true)->orderBy('leave_type_name')->get(),
@@ -53,12 +57,22 @@ class LeaveRequestController extends Controller
     {
         $this->authorize('submit-leave');
 
-        $employeeId = $this->currentEmployeeId();
-        if (! auth()->user()->isAdmin() && $employeeId !== null) {
-            $request->merge(['employee_id' => $employeeId]);
-        }
+        $user = $request->user();
+        $employee = $user->isAdmin() ? null : $this->currentEmployee();
 
-        $leaveRequest = LeaveRequest::create($request->validated());
+        abort_if(
+            ! $user->isAdmin() && ! $employee,
+            403,
+            'No employee record is linked to your account.'
+        );
+
+        $data = $request->validated();
+        $data['employee_id'] = $user->isAdmin()
+            ? $data['employee_id']
+            : $employee->id;
+        $data['status'] = 'Pending';
+
+        LeaveRequest::create($data);
 
         return redirect()
             ->route('leave_requests.index')
@@ -78,10 +92,14 @@ class LeaveRequestController extends Controller
     {
         $this->authorize('update', $leaveRequest);
 
+        $employees = auth()->user()->isAdmin()
+            ? Employee::orderBy('last_name')->orderBy('first_name')->get()
+            : Employee::whereKey($this->currentEmployee()?->id)->get();
+
         return view('leave_requests.edit', [
             'leaveRequest' => $leaveRequest,
             'leaveTypes' => LeaveType::where('is_active', true)->orderBy('leave_type_name')->get(),
-            'employees' => Employee::orderBy('last_name')->orderBy('first_name')->get(),
+            'employees' => $employees,
         ]);
     }
 
@@ -89,7 +107,13 @@ class LeaveRequestController extends Controller
     {
         $this->authorize('update', $leaveRequest);
 
-        $leaveRequest->update($request->validated());
+        $data = $request->validated();
+        if (! $request->user()->isAdmin()) {
+            $data['employee_id'] = $leaveRequest->employee_id;
+            $data['status'] = $leaveRequest->status;
+        }
+
+        $leaveRequest->update($data);
 
         return redirect()
             ->route('leave_requests.index')

@@ -184,4 +184,228 @@ describe('Leave management', function () {
             ->get(route('leave_types.index'))
             ->assertForbidden();
     });
+
+    it('shows an employee only the employee record linked to their account', function () {
+        $employeeRole = Role::create(['role_name' => 'Employee', 'is_active' => true]);
+        $employeeUser = User::factory()->create([
+            'role_id' => $employeeRole->id,
+            'email' => 'luna@example.test',
+        ]);
+
+        $employee = Employee::create([
+            'employee_code' => 'EMP-OWN-01',
+            'first_name' => 'Luna',
+            'last_name' => 'Ng',
+            'email' => 'luna@example.test',
+            'phone' => '555-0010',
+            'address' => '55 Market Street',
+            'date_of_birth' => '1996-02-01',
+            'gender' => 'Female',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+
+        $otherEmployee = Employee::create([
+            'employee_code' => 'EMP-OTHER-01',
+            'first_name' => 'Alex',
+            'last_name' => 'Kim',
+            'email' => 'alex@example.test',
+            'phone' => '555-0020',
+            'address' => '10 Market Street',
+            'date_of_birth' => '1995-02-01',
+            'gender' => 'Other',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+
+        $this->actingAs($employeeUser)
+            ->get(route('leave_requests.create'))
+            ->assertOk()
+            ->assertSee('<option value="'.$employee->id.'"', false)
+            ->assertDontSee('<option value="'.$otherEmployee->id.'"', false);
+    });
+
+    it('forces employee submissions to their linked record and pending status', function () {
+        $employeeRole = Role::create(['role_name' => 'Employee', 'is_active' => true]);
+        User::factory()->create([
+            'role_id' => $employeeRole->id,
+            'email' => 'another-user@example.test',
+        ]);
+        $employeeUser = User::factory()->create([
+            'role_id' => $employeeRole->id,
+            'email' => 'luna@example.test',
+        ]);
+        $employee = Employee::create([
+            'employee_code' => 'EMP-OWN-02',
+            'first_name' => 'Luna',
+            'last_name' => 'Ng',
+            'email' => 'luna@example.test',
+            'phone' => '555-0010',
+            'address' => '55 Market Street',
+            'date_of_birth' => '1996-02-01',
+            'gender' => 'Female',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+        $otherEmployee = Employee::create([
+            'employee_code' => 'EMP-OTHER-02',
+            'first_name' => 'Alex',
+            'last_name' => 'Kim',
+            'email' => 'alex@example.test',
+            'phone' => '555-0020',
+            'address' => '10 Market Street',
+            'date_of_birth' => '1995-02-01',
+            'gender' => 'Other',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+        $leaveType = LeaveType::create([
+            'leave_type_name' => 'Vacation Leave',
+            'default_days' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($employeeUser)
+            ->post(route('leave_requests.store'), [
+                'employee_id' => $otherEmployee->id,
+                'leave_type_id' => $leaveType->id,
+                'start_date' => now()->addDay()->toDateString(),
+                'end_date' => now()->addDays(2)->toDateString(),
+                'reason' => 'Family trip',
+                'status' => 'Approved',
+            ])
+            ->assertRedirect(route('leave_requests.index'));
+
+        $this->assertDatabaseHas('leave_requests', [
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+            'status' => 'Pending',
+        ]);
+        $this->assertDatabaseMissing('leave_requests', [
+            'employee_id' => $otherEmployee->id,
+        ]);
+
+        $leaveRequest = LeaveRequest::firstOrFail();
+        $this->actingAs($employeeUser)
+            ->get(route('leave_requests.show', $leaveRequest))
+            ->assertOk();
+
+        $this->actingAs($employeeUser)
+            ->put(route('leave_requests.update', $leaveRequest), [
+                'employee_id' => $otherEmployee->id,
+                'leave_type_id' => $leaveType->id,
+                'start_date' => now()->addDay()->toDateString(),
+                'end_date' => now()->addDays(2)->toDateString(),
+                'reason' => 'Updated family trip',
+                'status' => 'Approved',
+            ])
+            ->assertRedirect(route('leave_requests.index'));
+
+        $this->assertDatabaseHas('leave_requests', [
+            'id' => $leaveRequest->id,
+            'employee_id' => $employee->id,
+            'status' => 'Pending',
+            'reason' => 'Updated family trip',
+        ]);
+    });
+
+    it('shows an empty state and rejects submissions for an unlinked employee account', function () {
+        $employeeRole = Role::create(['role_name' => 'Employee', 'is_active' => true]);
+        $employeeUser = User::factory()->create([
+            'role_id' => $employeeRole->id,
+            'email' => 'unlinked@example.test',
+        ]);
+        $otherEmployee = Employee::create([
+            'employee_code' => 'EMP-OTHER-03',
+            'first_name' => 'Alex',
+            'last_name' => 'Kim',
+            'email' => 'alex@example.test',
+            'phone' => '555-0020',
+            'address' => '10 Market Street',
+            'date_of_birth' => '1995-02-01',
+            'gender' => 'Other',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+        $leaveType = LeaveType::create([
+            'leave_type_name' => 'Vacation Leave',
+            'default_days' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($employeeUser)
+            ->get(route('leave_requests.create'))
+            ->assertOk()
+            ->assertSee('No employee record is linked to your account.');
+
+        $this->actingAs($employeeUser)
+            ->post(route('leave_requests.store'), [
+                'employee_id' => $otherEmployee->id,
+                'leave_type_id' => $leaveType->id,
+                'start_date' => now()->addDay()->toDateString(),
+                'end_date' => now()->addDays(2)->toDateString(),
+                'reason' => 'Family trip',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('leave_requests', [
+            'employee_id' => $otherEmployee->id,
+        ]);
+    });
+
+    it('returns leave form validation errors for missing fields and reversed dates', function () {
+        $employeeRole = Role::create(['role_name' => 'Employee', 'is_active' => true]);
+        $employeeUser = User::factory()->create([
+            'role_id' => $employeeRole->id,
+            'email' => 'luna@example.test',
+        ]);
+        $employee = Employee::create([
+            'employee_code' => 'EMP-VALID-01',
+            'first_name' => 'Luna',
+            'last_name' => 'Ng',
+            'email' => 'luna@example.test',
+            'phone' => '555-0010',
+            'address' => '55 Market Street',
+            'date_of_birth' => '1996-02-01',
+            'gender' => 'Female',
+            'position_id' => 1,
+            'department_id' => 1,
+            'employment_status' => 'Active',
+            'date_hired' => '2024-01-15',
+        ]);
+        $leaveType = LeaveType::create([
+            'leave_type_name' => 'Vacation Leave',
+            'default_days' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($employeeUser)
+            ->post(route('leave_requests.store'), ['employee_id' => $employee->id])
+            ->assertSessionHasErrors(['leave_type_id', 'start_date', 'end_date', 'reason']);
+
+        $this->actingAs($employeeUser)
+            ->post(route('leave_requests.store'), [
+                'employee_id' => $employee->id,
+                'leave_type_id' => $leaveType->id,
+                'start_date' => now()->addDays(3)->toDateString(),
+                'end_date' => now()->addDay()->toDateString(),
+                'reason' => 'Date validation check',
+            ])
+            ->assertSessionHasErrors(['start_date', 'end_date']);
+
+        $this->get(route('leave_requests.create'))
+            ->assertOk()
+            ->assertSee('<option value="'.$employee->id.'" selected>', false)
+            ->assertSee('Date validation check');
+    });
 });

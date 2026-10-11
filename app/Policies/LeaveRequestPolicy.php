@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
 
 class LeaveRequestPolicy
@@ -17,8 +18,7 @@ class LeaveRequestPolicy
             return true;
         }
 
-        // Employee can view only their own
-        return $user->id === $leaveRequest->employee_id;
+        return $this->ownsLeaveRequest($user, $leaveRequest);
     }
 
     /**
@@ -39,8 +39,7 @@ class LeaveRequestPolicy
             return true;
         }
 
-        // Employee can update only their own pending requests
-        if ($user->id !== $leaveRequest->employee_id) {
+        if (! $this->ownsLeaveRequest($user, $leaveRequest)) {
             return false;
         }
 
@@ -57,8 +56,7 @@ class LeaveRequestPolicy
             return true;
         }
 
-        // Employee can cancel only their own pending requests
-        if ($user->id !== $leaveRequest->employee_id) {
+        if (! $this->ownsLeaveRequest($user, $leaveRequest)) {
             return false;
         }
 
@@ -79,5 +77,12 @@ class LeaveRequestPolicy
     public function reject(User $user, LeaveRequest $leaveRequest): bool
     {
         return $user->isAdmin();
+    }
+
+    private function ownsLeaveRequest(User $user, LeaveRequest $leaveRequest): bool
+    {
+        return Employee::where('email', $user->email)
+            ->whereKey($leaveRequest->employee_id)
+            ->exists();
     }
 }

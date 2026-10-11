@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
         // Create employee user
         User::create([
             'name' => 'John Doe',
-            'email' => 'employee@example.com',
+            'email' => 'john.doe@company.com',
             'password' => Hash::make('ChangeThisPassword123!'),
             'role_id' => $employeeRole->id,
             'phone' => '09987654321',
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
         // Create another employee user
         User::create([
             'name' => 'Jane Smith',
-            'email' => 'jane.smith@example.com',
+            'email' => 'jane.smith@company.com',
             'password' => Hash::make('ChangeThisPassword123!'),
             'role_id' => $employeeRole->id,
             'phone' => '09111111111',
